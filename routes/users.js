@@ -3,21 +3,22 @@ const bodyParser = require('body-parser');
 var User = require('../models/user');
 var passport = require('passport');
 var authenticate = require('../authenticate');
+const cors = require('./cors');
 var router = express.Router();
 router.use(bodyParser.json());
 /* GET users listing. */
-router.get('/', authenticate.verifyUser,authenticate.verifyAdmin, (req, res, next) => {
- // res.send('respond with a resource');
- User.find({})
- .then((users)=>{
-   res.statusCode=200;
-   res.setHeader('Content-Type', 'application/json');
-   res.json(users)
-  }, (err) => next(err))
-  .catch((err) => next(err))
+router.get('/', cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
+  // res.send('respond with a resource');
+  User.find({})
+    .then((users) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(users)
+    }, (err) => next(err))
+    .catch((err) => next(err))
 });
 
-router.post('/signup', (req, res, next) => {
+router.post('/signup', cors.corsWithOptions, (req, res, next) => {
   User.register(new User({ username: req.body.username }),
     req.body.password, (err, user) => {
       if (err) {
@@ -48,7 +49,7 @@ router.post('/signup', (req, res, next) => {
     });
 
 });
-router.post('/login', passport.authenticate('local'), (req, res) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req, res) => {
 
   var token = authenticate.getToken({ _id: req.user._id });
   res.statusCode = 200;
@@ -59,7 +60,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
   })// client when recive token will extract token
 })
 
-router.get('/logout', (req, res) => {
+router.get('/logout', cors.corsWithOptions, (req, res) => {
   if (req.session) {
     req.session.destroy();//server side
     res.clearCookie('session-id'); //client side
