@@ -41,10 +41,16 @@ favoriteRouter.route('/')
                         }
                         //***************** */
                         favorite[i].save()
-                        console.log('Favorite Created ', favorite[i])
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json(favorite[i]);
+                        Favorites.findById(favorite[i]._id)
+                            .populate('author')
+                            .populate('dishes')
+                            .then ((favorite)=>{
+                               // console.log('Favorite Created ', favorite)
+                                res.statusCode = 200;
+                                res.setHeader('Content-Type', 'application/json');
+                                res.json(favorite);
+                            })
+                        
                         return;
                     }
 
@@ -61,10 +67,15 @@ favoriteRouter.route('/')
                         //**** */
                         favorite.author = req.user._id
                         favorite.save()
-                        console.log('Favorite Created ', favorite)
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json(favorite);
+                        Favorites.findById(favorite._id)
+                            .populate('author')
+                            .populate('dishes')
+                            .then ((favorite)=>{
+                               // console.log('Favorite Created ', favorite)
+                                res.statusCode = 200;
+                                res.setHeader('Content-Type', 'application/json');
+                                res.json(favorite);
+                            })
                     }
                         , (err) => next(err))
                     .catch((err) => next(err));
@@ -80,9 +91,15 @@ favoriteRouter.route('/')
                         favorite[i].remove();
                         favorite[i].save()
 
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json(favorite[i]);
+                        Favorites.findById(favorite[i]._id)
+                        .populate('author')
+                        .populate('dishes')
+                        .then ((favorite)=>{
+                           // console.log('Favorite Deleted ', favorite)
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json(favorite);
+                        })
                     }
                 }
             }, (err) => next(err))
@@ -90,6 +107,29 @@ favoriteRouter.route('/')
     });
 
 favoriteRouter.route('/:dishId')
+    .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200) })
+    .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
+        Favorites.findOne({ user: req.user._id })
+            .then((favorite) => {
+                if (!favorite) {
+                    res.statusCode = 200;
+                    res.setHeader('Content_type', 'application/json');
+                    return res.json({ "exists": false, "favorites": favorite })
+                }
+                else {
+                    if (favorites.dishes.indexOf(req.params.dishId) < 0) {
+                        res.statusCode = 200;
+                        res.setHeader('Content_type', 'application/json');
+                        return res.json({ "exists": false, "favorites": favorite })
+                    }
+                    else {
+                        res.statusCode = 200;
+                        res.setHeader('Content_type', 'application/json');
+                        return res.json({ "exists": true, "favorites": favorite })
+                    }
+                }
+            })
+    })
     .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
 
         Favorites.find({})
@@ -102,26 +142,36 @@ favoriteRouter.route('/:dishId')
                         }
                         //***************** */
                         favorite[i].save()
-                        console.log('Favorite Created ', favorite[i])
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json(favorite[i]);
+                        Favorites.findById(favorite[i]._id)
+                        .populate('author')
+                        .populate('dishes')
+                        .then ((favorite)=>{
+                           // console.log('Favorite Created ', favorite)
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json(favorite);
+                        })
                         return;
                     }
                 }
                 Favorites.create({})
                     .then((favorite) => {
                         //******* */
-                            if (favorite.dishes.indexOf(req.params.dishId) === -1) {
-                                favorite.dishes.push(req.params.dishId);
-                            }
+                        if (favorite.dishes.indexOf(req.params.dishId) === -1) {
+                            favorite.dishes.push(req.params.dishId);
+                        }
                         //**** */
                         favorite.author = req.user._id
                         favorite.save()
-                        console.log('Favorite Created ', favorite)
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json(favorite);
+                        Favorites.findById(favorite[i]._id)
+                        .populate('author')
+                        .populate('dishes')
+                        .then ((favorite)=>{
+                           // console.log('Favorite Created ', favorite)
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json(favorite);
+                        })
                     }
                         , (err) => next(err))
                     .catch((err) => next(err));
@@ -134,15 +184,20 @@ favoriteRouter.route('/:dishId')
             .then((favorite) => {
                 for (var i = 0; i < favorite.length; i++) {
                     if (favorite[i].author._id.equals(req.user._id)) {
-                        const indx=favorite[i].dishes.indexOf(req.params.dishId)
+                        const indx = favorite[i].dishes.indexOf(req.params.dishId)
                         if (indx !== -1) {
-                            favorite[i].dishes.splice(indx,1);
+                            favorite[i].dishes.splice(indx, 1);
                         }
                         favorite[i].save()
-
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json(favorite[i]);
+                        Favorites.findById(favorite[i]._id)
+                        .populate('author')
+                        .populate('dishes')
+                        .then ((favorite)=>{
+                           // console.log('Favorite Deleted ', favorite)
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json(favorite);
+                        })
                     }
                 }
             }, (err) => next(err))
